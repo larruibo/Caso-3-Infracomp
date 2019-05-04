@@ -8,12 +8,19 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class C {
 	private static ServerSocket ss;	
 	private static final String MAESTRO = "MAESTRO SIN SEGURIDAD: ";
 	private static X509Certificate certSer; /* acceso default */
 	private static KeyPair keyPairServidor; /* acceso default */
+	
+	
+	//ESTO ES PARA EL POOL DE THREADS.
+	public static final int N_THREADS = 2;
+	private static ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
 	
 	/**
 	 * @param args
@@ -42,9 +49,11 @@ public class C {
 			try { 
 				Socket sc = ss.accept();
 				System.out.println(MAESTRO + "Cliente " + idThread + " aceptado.");
-				D d = new D(sc,idThread);
+				
+				//SE CAMBIÓ PARA EL POOL DE THREADS.
+				executor.submit(new D(sc,idThread));
+				
 				idThread++;
-				d.start();
 			} catch (IOException e) {
 				System.out.println(MAESTRO + "Error creando el socket cliente.");
 				e.printStackTrace();
