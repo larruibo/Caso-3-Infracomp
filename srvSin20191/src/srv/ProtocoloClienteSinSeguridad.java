@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -15,6 +16,10 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.xml.bind.DatatypeConverter;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -333,5 +338,18 @@ public class ProtocoloClienteSinSeguridad {
 		localJcaX509v3CertificateBuilder.addExtension(X509Extension.authorityKeyIdentifier, false, localJcaX509ExtensionUtils.createAuthorityKeyIdentifier(publica2));
 		return new JcaX509CertificateConverter().setProvider(proveedor).getCertificate(localJcaX509v3CertificateBuilder.build(new JcaContentSignerBuilder("MD5withRSA").setProvider(proveedor).build(privada)));
 	}
+	
+	public double getSystemCpuLoad() throws Exception {
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+		ObjectName name = ObjectName.getInstance("java.lang:type=OperatingSystem"); 
+		AttributeList list = mbs.getAttributes(name, new String[]{ "SystemCpuLoad" });
+		if (list.isEmpty()) return Double.NaN;
+		Attribute att = (Attribute)list.get(0); Double value = (Double)att.getValue();
+		
+		// usually takes a couple of seconds before we get real values 
+		if (value == -1.0) return Double.NaN;
+		// returns a percentage value with 1 decimal point precision 
+		return ((int)(value * 1000) / 10.0);
+		}
 	
 }
