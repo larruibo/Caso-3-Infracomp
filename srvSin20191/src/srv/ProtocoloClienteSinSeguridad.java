@@ -64,6 +64,22 @@ public class ProtocoloClienteSinSeguridad {
 	static PublicKey serverPublicKey = null;
 	static SecretKey llaveSimetrica = null;
 	private static KeyPair parLlaves;
+	
+	// Tiempos
+	private static long tiempoLecturaLlave;
+	private static long tiempoEscrituraOk;
+	
+	public static long darTiempoLecturaLlave()
+	{
+		return tiempoLecturaLlave;
+	}
+	
+	public static long darTiempoEscrituraOk()
+	{
+		return tiempoEscrituraOk;
+	}
+	
+	
 		
 		
 	//Método que se encarga de procesar la comunicación entre el cliente y el servidor.
@@ -104,99 +120,12 @@ public class ProtocoloClienteSinSeguridad {
 
 		System.out.println();
 		System.out.println("Se entabló la comunicación con el servidor.");
-		//Escoge el algoritmo simétrico, verifica que escoja un algoritmo válido
-		while(!continuar)
-		{
-			// Escoger simetrico
-			System.out.println("Por favor escoja el número del algoritmo simetrico que desea: ");
-
-			for(int i = 0; i < simetricos.length; i++) 
-			{
-				System.out.println((i+1) +" " +simetricos[i]);
-			}
-
-			ans = stdIn.readLine();
-			try
-			{
-				opcion = Integer.parseInt(ans);
-				if(opcion > simetricos.length || opcion  < 1) 
-				{
-					System.out.println("Opcion no existe");
-				} else {
-					simetrico = simetricos[opcion-1];
-					continuar = true;
-				}
-			}
-			catch(Exception e)
-			{
-				System.out.println("No ingresó un número");
-			}
-			
-		}
-		continuar = false;
 		
-		//Escoge el algoritmo asimetrico, verifica que escoja un algoritmo válido
-		while(!continuar)
-		{
-			// Escoger asimetrico
-			System.out.println("Por favor escoja el número del algoritmo asimetrico que desea: ");
-
-			for(int i = 0; i < asimetricos.length; i++)
-			{
-				System.out.println((i+1) +" " +asimetricos[i]);
-			}
-
-			ans = stdIn.readLine();
-			try
-			{
-				opcion = Integer.parseInt(ans);
-				if(opcion > asimetricos.length || opcion  < 1) 
-				{
-					System.out.println("Opcion no existe");
-				} else {
-					asimetrico = asimetricos[opcion-1];
-					continuar = true;
-				}
-			}
-			catch(Exception e)
-			{
-				System.out.println("No ingresó un número");
-			}
-			
-		}
-
-		continuar = false;
+		simetrico = simetricos[0];
 		
-		//Escoge el HMAC, verifica que escoja un algoritmo válido
-		while(!continuar)
-		{
-			// Escoger hmac
-			System.out.println("Por favor escoja el número del algoritmo hmac que desea: ");
-
-			for(int i = 0; i < hmacs.length; i++) 
-			{
-				System.out.println((i+1) +" " +hmacs[i]);
-			}
-
-			try
-			{
-				ans = stdIn.readLine();
-				opcion = Integer.parseInt(ans);
-				if(opcion > hmacs.length || opcion  < 1) 
-				{
-					System.out.println("Opcion no existe");
-				} else {
-					hmac = hmacs[opcion-1];
-					continuar = true;
-				}
-			}
-			catch(Exception e)
-			{
-				System.out.println("No ingresó un número");
-			}
-				
-		}
-		continuar = false;
+		asimetrico = asimetricos[0];
+		
+		hmac = hmacs[0];
 
 			
 
@@ -254,6 +183,7 @@ public class ProtocoloClienteSinSeguridad {
 		{
 			throw new Exception("La llave que retornó el servidor no coincide.");
 		}
+		tiempoLecturaLlave = System.currentTimeMillis();
 		
 		
 	}
@@ -263,11 +193,11 @@ public class ProtocoloClienteSinSeguridad {
 	public static void manejarMensajes(BufferedReader stdIn) throws IOException 
 	{
 		String fromServer;
-		String id;
-		String gradosLatitud;
-		String minutosLatitud;
-		String gradosLongitud;
-		String minutosLongitud;
+		String id = "1";
+		String gradosLatitud = "10";
+		String minutosLatitud = "10";
+		String gradosLongitud = "10";
+		String minutosLongitud = "10";
 		int datosEnviados = 0;
 		
 		System.out.println();
@@ -276,25 +206,6 @@ public class ProtocoloClienteSinSeguridad {
 		System.out.println("Por favor sea cuidadoso con los datos que va a ingresar. Deberá hacerlo 2 veces.");
 		while(datosEnviados<2)
 		{
-			//Ingresar el número de identificacion
-			System.out.println("Por favor ingrese el número de identificación");
-			id = stdIn.readLine();
-			
-			//Ingresar los grados de la latitud
-			System.out.println("Por favor ingrese el número de grados de la latitud");
-			gradosLatitud = stdIn.readLine();
-			
-			//Ingresar los minutos decimales de la latitud
-			System.out.println("Por favor ingrese los minutos decimales de la latitud. Recuerde que el separador es punto (.)");
-			minutosLatitud = stdIn.readLine();
-			
-			//Ingresar los grados de la longitud
-			System.out.println("Por favor ingrese el número de grados de la longitud");
-			gradosLongitud = stdIn.readLine();
-			
-			//Ingresar los minutos decimales de la latitud
-			System.out.println("Por favor ingrese los minutos decimales de la longitud. Recuerde que el separador es punto (.)");
-			minutosLongitud = stdIn.readLine();
 			
 			//Crea la cadena completa y la envía al servidor. Realiza el paso dos veces.
 			String datos = id + SEPARADOR_ID + gradosLatitud + ESPACIO + minutosLatitud + SEPARADOR_USUARIO + gradosLongitud + ESPACIO + minutosLongitud;
@@ -306,6 +217,7 @@ public class ProtocoloClienteSinSeguridad {
 		
 		//Espera la respuesta del servidor, bien sea la confirmación de los datos recibidos o ERROR
 		fromServer = lector.readLine();
+		tiempoEscrituraOk = System.currentTimeMillis();
 		
 		if(fromServer.equalsIgnoreCase(ERROR))
 		{
@@ -351,5 +263,7 @@ public class ProtocoloClienteSinSeguridad {
 		// returns a percentage value with 1 decimal point precision 
 		return ((int)(value * 1000) / 10.0);
 		}
+	
+	
 	
 }

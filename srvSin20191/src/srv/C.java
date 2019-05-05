@@ -25,7 +25,7 @@ public class C {
 	
 	
 	//ESTO ES PARA EL POOL DE THREADS.
-	public static final int N_THREADS = 2;
+	public static final int N_THREADS = 20;
 	private static ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
 	
 	public double getSystemCpuLoad() throws Exception 

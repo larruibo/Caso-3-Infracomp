@@ -9,7 +9,21 @@ import java.net.Socket;
 public class ClienteSinSeguridad {
 	
 	public static final int PUERTO = 2000;
-	public static final String SERVIDOR = "localhost";
+	public static final String SERVIDOR = "192.168.0.35";
+	
+	// Tiempos
+	private static long tiempoLecturaLlave;
+	private static long tiempoEscrituraOk;	
+	
+	public  long darTiempoLecturaLlave()
+	{
+		return tiempoLecturaLlave;
+	}
+		
+	public  long darTiempoEscrituraOk()
+	{
+		return tiempoEscrituraOk;
+	}
 	
 	public static void main(String args[]) throws IOException 
 	{
@@ -42,6 +56,8 @@ public class ClienteSinSeguridad {
 		
 		//Se ejecuta el protocolo del lado del cliente
 		ProtocoloClienteSinSeguridad.procesar(stdIn, lector, escritor);
+		tiempoLecturaLlave = ProtocoloClienteSinSeguridad.darTiempoLecturaLlave();
+		tiempoEscrituraOk = ProtocoloClienteSinSeguridad.darTiempoEscrituraOk();
 		
 		//Se cierran los flujos y el socket
 		stdIn.close();

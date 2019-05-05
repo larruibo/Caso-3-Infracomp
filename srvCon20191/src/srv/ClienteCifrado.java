@@ -39,8 +39,8 @@ import Helpers.HexConverter;
 public class ClienteCifrado extends Cliente {
 
 	// Constantes
-	public final static int PORT = 3000;
-	public final static String HOST = "localhost";
+	public final static int PORT = 2000;
+	public final static String HOST = "192.168.0.35";
 	public final static String OK = "OK";
 	public final static String ERROR = "ERROR";
 	public final static String HOLA = "HOLA";
@@ -70,6 +70,20 @@ public class ClienteCifrado extends Cliente {
 	public String simetrico = "";
 	public String asimetrico = "";
 	public String hmac = "";
+	
+	// Tiempos
+	private static long tiempoLecturaLlave;
+	private static long tiempoEscrituraOk;	
+		
+	public  long darTiempoLecturaLlave()
+	{
+		return tiempoLecturaLlave;
+	}
+			
+	public  long darTiempoEscrituraOk()
+	{
+		return tiempoEscrituraOk;
+	}
 
 	// Constructor
 	public ClienteCifrado() {
@@ -111,49 +125,13 @@ public class ClienteCifrado extends Cliente {
 		}
 
 		// Escoger simetrico
-		System.out.println("Escoja el algoritmo simetrico que desea: ");
-
-		for(int i = 0; i < simetricos.length; i++) {
-			System.out.println((i+1) +" " +simetricos[i]);
-		}
-
-		String ans = cliente.readLine();
-		int opcion = Integer.parseInt(ans);
-		if(opcion > simetricos.length || opcion  < 1) {
-			throw new Exception("Opcion no existe");
-		} else {
-			simetrico = simetricos[opcion-1];
-		}
+		simetrico = simetricos[0];
 
 		// Escoger asimetrico
-		System.out.println("Escoja el algoritmo asimetrico que desea: ");
-
-		for(int i = 0; i < asimetricos.length; i++) {
-			System.out.println((i+1) +" " +asimetricos[i]);
-		}
-
-		ans = cliente.readLine();
-		opcion = Integer.parseInt(ans);
-		if(opcion > asimetricos.length || opcion  < 1) {
-			throw new Exception("Opcion no existe");
-		} else {
-			asimetrico = asimetricos[opcion-1];
-		}
-
+		asimetrico = asimetricos[0];
+		
 		// Escoger hmac
-		System.out.println("Escoja el algoritmo hmac que desea: ");
-
-		for(int i = 0; i < hmacs.length; i++) {
-			System.out.println((i+1) +" " +hmacs[i]);
-		}
-
-		ans = cliente.readLine();
-		opcion = Integer.parseInt(ans);
-		if(opcion > hmacs.length || opcion  < 1) {
-			throw new Exception("Opcion no existe");
-		} else {
-			hmac = hmacs[opcion-1];
-		}		
+		hmac = hmacs[0];	
 
 		System.out.println("Escogio: " +simetrico +SEPARADOR +asimetrico +SEPARADOR +hmac);
 		escritor.println(ALGORITMOS +SEPARADOR +simetrico +SEPARADOR +asimetrico +SEPARADOR +hmac);
@@ -204,7 +182,7 @@ public class ClienteCifrado extends Cliente {
 	
 		// Leer certificado Servidor
 		String pem = COMIENZO_CERTIFICADO +System.lineSeparator();
-byte[] decoded = DatatypeConverter.parseHexBinary(cmd);
+		byte[] decoded = DatatypeConverter.parseHexBinary(cmd);
 
 
 
@@ -220,7 +198,7 @@ byte[] decoded = DatatypeConverter.parseHexBinary(cmd);
 //		
 //		byte[] llaveEnBytes = (serverPublicKey.getEncoded());
 //		String llaveString = DatatypeConverter.printHexBinary(llaveEnBytes);
-		
+		tiempoLecturaLlave = System.currentTimeMillis();
 		escritor.println(llaveString);
 	}
 	
@@ -281,7 +259,7 @@ byte[] decoded = DatatypeConverter.parseHexBinary(cmd);
 
 	public void manejarPosicion(BufferedReader cliente) throws Exception {
 		System.out.println("Ingrese su id seguido de ; seguuido de su posici�n como dos parejas de n�meros \n (grados y minutos en decimal), separados por una coma �,� \n : Por ejemplo: 41 24.2028, 2 10.4418");
-		String pos = cliente.readLine();
+		String pos = " 1; 10 10, 10 10";
 		byte[] byPosicion = Ciph.cifrar(pos.getBytes(), serverSecretKey, simetrico);
 
 		// Digest
@@ -292,6 +270,7 @@ byte[] decoded = DatatypeConverter.parseHexBinary(cmd);
 		String hpos = HexConverter.toHEX(chashPosicion);
 		escritor.println(cpos);
 		escritor.println(hpos);
+		tiempoEscrituraOk = System.currentTimeMillis();
 		System.out.println("Se envio la posici�n e id");
 		String lin = lector.readLine();
 		if (!lin.equals("ERROR")) {
